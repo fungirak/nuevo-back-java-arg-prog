@@ -5,8 +5,11 @@ import com.ProyectoFinalArgProg.crud.entity.AcercaDe;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Optional;
+
 import com.ProyectoFinalArgProg.crud.repository.AcercaDeRepository;
+import com.ProyectoFinalArgProg.crud.security.entity.Usuario;
+import com.ProyectoFinalArgProg.crud.security.repository.UsuarioRepository;
 
 
 /**
@@ -20,50 +23,94 @@ public class AcercaDeService  {
     @Autowired
     public AcercaDeRepository acercadeRepo;
 
+    @Autowired
+    public UsuarioRepository usuarioRepo;
 
-   
-    public List<AcercaDe> verAcercaDe(){
-      return acercadeRepo.findAll();
+
+    public AcercaDe verAcercaDe(String nombre_usuario){
+        Usuario usuarioAutenticado = usuarioRepo.findByNombreUsuario(nombre_usuario);
+        Integer idUsuario = usuarioAutenticado.getIdUsuario();
+
+      AcercaDe acercaDeDevuelto =  acercadeRepo.buscarAcercaDePorIdUsuario(idUsuario);
+      if(acercaDeDevuelto == null ){
+        acercaDeDevuelto = new AcercaDe();
+      }
+
+      return acercaDeDevuelto ;
     }
 
-   
-    public void crearAcercaDe(AcercaDe acercade){
-      acercadeRepo.save(acercade);
+    public AcercaDe verAcercaDe(String nombre_usuario, Integer idAcercaDe){
+      Usuario usuarioAutenticado = usuarioRepo.findByNombreUsuario(nombre_usuario);
+      Integer idUsuario = usuarioAutenticado.getIdUsuario();
+
+    AcercaDe acercaDeDevuelto =  acercadeRepo.buscarAcercaDePorIdUsuarioAndId(idUsuario, idAcercaDe);
+    if(acercaDeDevuelto == null ){
+      acercaDeDevuelto = new AcercaDe();
     }
+
+    return acercaDeDevuelto ;
+  }
+
+    
+
+    public void crearAcercaDe(AcercaDe acercade, String nombre_usuario){
+      Usuario usuarioAutenticado = usuarioRepo.findByNombreUsuario(nombre_usuario);
+      Integer idUsuarioAutenticado = usuarioAutenticado.getIdUsuario();
+
+        // Se procede a crear el acercaDe.
+        acercade.setUsuario(usuarioAutenticado);
+        acercadeRepo.save(acercade);
+      }
+     
+     
+    
 
    
     
-    public void borrarAcercaDe (Long id){
-      acercadeRepo.deleteById(id);
+    public void borrarAcercaDe (String nombre_usuario, Integer idAcercaDe){
+      Usuario usuarioAutenticado = usuarioRepo.findByNombreUsuario(nombre_usuario);
+      Integer idUsuario = usuarioAutenticado.getIdUsuario();
+
+      acercadeRepo.deleteByIdAcercaDeAndIdUsuario(idAcercaDe, idUsuario);
     } 
- 
-    
-    public AcercaDe buscarAcercaDe(Long id){
-      return acercadeRepo.findById(id).orElse(null);
+
+    public AcercaDe actualizarAcercaDe(AcercaDe ad){
+      return acercadeRepo.save(ad);
     }
 
    
-    public void editarAcercaDe (Long id, AcercaDe acercade){
-         acercadeRepo.findById(id).map( editAcerc -> {
-         editAcerc.setFullname(acercade.getFullname());
-         editAcerc.setPosicion(acercade.getPosicion());
-         editAcerc.setDescripcion(acercade.getDescripcion());
+    public AcercaDe editarAcercaDe (String nombre_usuario, AcercaDe acercade){
+      Usuario usuarioAutenticado = usuarioRepo.findByNombreUsuario(nombre_usuario);
+      Integer idUsuario = usuarioAutenticado.getIdUsuario();
 
-         return acercadeRepo.save(editAcerc);
-      });
+      Integer idAcercaDe = acercade.getId();
+
+      AcercaDe acercaDeUpdate =  acercadeRepo.buscarAcercaDePorIdUsuarioAndId(idUsuario, idAcercaDe);
+                     //acercaDeUpdate.setId(acercade.getId());
+                     acercaDeUpdate.setFullname(acercade.getFullname());
+                     acercaDeUpdate.setPosicion(acercade.getPosicion());
+                     acercaDeUpdate.setDescripcion(acercade.getDescripcion());
+                     acercaDeUpdate.setUsuario(usuarioAutenticado);
+
+             AcercaDe acercaDeActualizado =  acercadeRepo.save(acercaDeUpdate);
+
+              return acercaDeActualizado;
+      };
         //.orElseGet(() -> {
         //  acercade.setId(id);
         //  return acercadeRepo.save(acercade);
         //});
-    }
+    
     
 
       
            
-           public Boolean existsAcercaDe(Long id){
+           public Boolean existsAcercaDe(String nombre_usuario, Integer idAcercaDe){
+            Usuario usuarioAutenticado = usuarioRepo.findByNombreUsuario(nombre_usuario);
+            Integer idUsuario = usuarioAutenticado.getIdUsuario();
+
                 try {
-                  acercadeRepo.findById(id);
-                  return true;
+                  return acercadeRepo.existsByIdAcercaDeAndIdUsuario(idAcercaDe, idUsuario);
                  } catch(Exception e){
                     return false;
                  }

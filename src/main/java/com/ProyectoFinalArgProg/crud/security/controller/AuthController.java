@@ -1,6 +1,7 @@
 package com.ProyectoFinalArgProg.crud.security.controller;
 
 import com.ProyectoFinalArgProg.crud.dto.Mensaje;
+import com.ProyectoFinalArgProg.crud.entity.AcercaDe;
 import com.ProyectoFinalArgProg.crud.security.dto.JwtDto;
 import com.ProyectoFinalArgProg.crud.security.dto.LoginUsuario;
 import com.ProyectoFinalArgProg.crud.security.dto.NuevoUsuario;
@@ -10,6 +11,12 @@ import com.ProyectoFinalArgProg.crud.security.enums.RolNombre;
 import com.ProyectoFinalArgProg.crud.security.jwt.JwtProvider;
 import com.ProyectoFinalArgProg.crud.security.service.RolService;
 import com.ProyectoFinalArgProg.crud.security.service.UsuarioService;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +30,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+
+import java.sql.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,23 +55,39 @@ public class AuthController {
     @Autowired
     JwtProvider jwtProvider;
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     @PostMapping("/nuevo")
     public ResponseEntity<?> nuevo(@Valid @RequestBody NuevoUsuario nuevoUsuario, BindingResult bindingResult){
         if(bindingResult.hasErrors())
             return new ResponseEntity(new Mensaje("campos mal puestos o email inválido"), HttpStatus.BAD_REQUEST);
-        if(usuarioService.existsByNombreUsuario(nuevoUsuario.getNombreUsuario()))
+        if(usuarioService.existsByNombreUsuario(nuevoUsuario.getNombre()))
             return new ResponseEntity(new Mensaje("ese nombre ya existe"), HttpStatus.BAD_REQUEST);
+        if(usuarioService.existsByNombreUsuario(nuevoUsuario.getNombreUsuario()))
+            return new ResponseEntity(new Mensaje("ese nombreUsuario ya existe"), HttpStatus.BAD_REQUEST);
         if(usuarioService.existsByEmail(nuevoUsuario.getEmail()))
             return new ResponseEntity(new Mensaje("ese email ya existe"), HttpStatus.BAD_REQUEST);
-        Usuario usuario =
+        
+    
+        // ALGO HAY QUE HACER PARA QUE SE PUEDAN INGRESAR 2 PASSWORDS IGUALES PARA 2 USUARIOS DISTINTOS
+        //  Y QUE FUNCIONE GUARDANDOSÉ CON ALGO ALEATORIO PARA DIFERENCIARSE.
+        //Integer randomNumber = RandomUtils.nextInt(100000000, 999999999);
+        //String claveConAleatoriedad = nuevoUsuario.getPassword() + randomNumber;
+
+            Usuario usuario =
                 new Usuario(nuevoUsuario.getNombre(), nuevoUsuario.getNombreUsuario(), nuevoUsuario.getEmail(),
                         passwordEncoder.encode(nuevoUsuario.getPassword()));
+
+
         Set<Rol> roles = new HashSet<>();
         roles.add(rolService.getByRolNombre(RolNombre.ROLE_USER).get());
         if(nuevoUsuario.getRoles().contains("admin"))
             roles.add(rolService.getByRolNombre(RolNombre.ROLE_ADMIN).get());
         usuario.setRoles(roles);
         usuarioService.save(usuario);
+
+        logger.info("EL USUARIO GUARDADO ES  {}", usuario);
+
         return new ResponseEntity(new Mensaje("usuario guardado"), HttpStatus.CREATED);
     }
 
@@ -74,8 +99,17 @@ public class AuthController {
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginUsuario.getNombreUsuario(), loginUsuario.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtProvider.generateToken(authentication);
+
+        logger.info("EL TOKEN DEL USUARIO ES  {}", jwt);
+
         UserDetails userDetails = (UserDetails)authentication.getPrincipal();
         JwtDto jwtDto = new JwtDto(jwt, userDetails.getUsername(), userDetails.getAuthorities());
+
+        logger.info("EL JWTDTO DEL USUARIO ES {}", jwtDto);
+
         return new ResponseEntity(jwtDto, HttpStatus.OK);
     }
+
+    
+
 }
