@@ -49,7 +49,7 @@ public class AcercaDeController {
 
     private static final Logger logger = LoggerFactory.getLogger(AcercaDeController.class);
 
-    //@PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER')")
         @GetMapping("/{nombre_usuario}/acerca_de")
             public ResponseEntity<AcercaDe> list(@PathVariable String nombre_usuario){
 
@@ -72,9 +72,9 @@ public class AcercaDeController {
             }
 
 
-    //@PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER')")
         @GetMapping("/{nombre_usuario}/acerca_de/{id}")
-            public ResponseEntity<AcercaDe> getById(@PathVariable String nombre_usuario, @PathVariable("id") Integer idAcercaDe){
+            public ResponseEntity<AcercaDe> getByUsername(@PathVariable String nombre_usuario, @PathVariable("id") Integer idAcercaDe){
            
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String nombreUsuarioLogueado = authentication.getName();
@@ -89,9 +89,9 @@ public class AcercaDeController {
             }else{
                 logger.info("USUARIO NO AUTENTICADO {}", nombreUsuarioLogueado);
                 throw new AccessDeniedException("NO TENÉS AUTORIZACIÓN PARA REALIZAR ESTA PETICIÓN.");
-            }
+        }
 
-            }
+    }
     
 
     @PreAuthorize("hasRole('USER')")
@@ -135,20 +135,21 @@ public class AcercaDeController {
         }
 
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER')") 
         @DeleteMapping("/{nombre_usuario}/acerca_de/{id}")
         public ResponseEntity<?> delete(@PathVariable String nombre_usuario, @PathVariable("id") Integer idAcercaDe){
-          
+            // Authentication authentication = Security ContextHolder.getContext().getAuthentication
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		    String nombreUsuarioLogueado = authentication.getName();
-
+           
+        
 
             if(nombre_usuario.equals(nombreUsuarioLogueado)){
                 logger.info("USUARIO AUTENTICADO {}", nombreUsuarioLogueado);
                     Boolean existeAcercaDeBuscado = acercadeServ.existsAcercaDe(nombre_usuario, idAcercaDe);
                     if(existeAcercaDeBuscado){
                         acercadeServ.borrarAcercaDe(nombre_usuario, idAcercaDe);
-                        return new ResponseEntity(new Mensaje("Item AcercaDe eliminado."), HttpStatus.OK);
+                        return new ResponseEntity(new Mensaje("ITEM ACERCA_DE ELIMINADO."), HttpStatus.OK);
                     }else{
                         return new ResponseEntity(new Mensaje("No existe el Item buscado."), HttpStatus.NOT_FOUND);
                     }

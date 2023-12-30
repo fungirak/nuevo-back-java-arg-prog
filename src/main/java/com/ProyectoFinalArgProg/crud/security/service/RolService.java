@@ -21,6 +21,8 @@ public class RolService {
     }
 
     public void save(Rol rol){
-        rolRepository.save(rol);
+        if (!rolRepository.existsByRolNombre(rol.getRolNombre())) {
+                rolRepository.save(rol);
+        }
     }
 }

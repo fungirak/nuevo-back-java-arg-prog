@@ -25,6 +25,12 @@ public class UsuarioPrincipal implements UserDetails {
     }
 
     public static UsuarioPrincipal build(Usuario usuario){
+
+        if (usuario == null) {
+            throw new IllegalArgumentException("Usuario no puede ser null");
+        }
+
+        
         List<GrantedAuthority> authorities =
                 usuario.get().getRoles().stream().map(rol -> new SimpleGrantedAuthority(rol
                 .getRolNombre().name())).collect(Collectors.toList());

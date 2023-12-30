@@ -20,7 +20,7 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public interface EducacionRepository extends JpaRepository<Educacion, Long> {
+public interface EducacionRepository extends JpaRepository<Educacion, Integer> {
 
     @Query(value="SELECT * FROM educacion WHERE id_usuario =:idUsuario" , nativeQuery = true)
     Set<Educacion> buscarTodaLaEducacionPorIdUsuario(@Param("idUsuario") Integer idUsuario);

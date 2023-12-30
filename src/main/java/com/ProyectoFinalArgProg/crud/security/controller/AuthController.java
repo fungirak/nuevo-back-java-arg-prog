@@ -61,33 +61,29 @@ public class AuthController {
     public ResponseEntity<?> nuevo(@Valid @RequestBody NuevoUsuario nuevoUsuario, BindingResult bindingResult){
         if(bindingResult.hasErrors())
             return new ResponseEntity(new Mensaje("campos mal puestos o email inválido"), HttpStatus.BAD_REQUEST);
-        if(usuarioService.existsByNombreUsuario(nuevoUsuario.getNombre()))
-            return new ResponseEntity(new Mensaje("ese nombre ya existe"), HttpStatus.BAD_REQUEST);
         if(usuarioService.existsByNombreUsuario(nuevoUsuario.getNombreUsuario()))
-            return new ResponseEntity(new Mensaje("ese nombreUsuario ya existe"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(new Mensaje("ese nombre ya existe"), HttpStatus.BAD_REQUEST);
         if(usuarioService.existsByEmail(nuevoUsuario.getEmail()))
             return new ResponseEntity(new Mensaje("ese email ya existe"), HttpStatus.BAD_REQUEST);
-        
-    
-        // ALGO HAY QUE HACER PARA QUE SE PUEDAN INGRESAR 2 PASSWORDS IGUALES PARA 2 USUARIOS DISTINTOS
-        //  Y QUE FUNCIONE GUARDANDOSÉ CON ALGO ALEATORIO PARA DIFERENCIARSE.
-        //Integer randomNumber = RandomUtils.nextInt(100000000, 999999999);
-        //String claveConAleatoriedad = nuevoUsuario.getPassword() + randomNumber;
-
-            Usuario usuario =
+        Usuario usuario =
                 new Usuario(nuevoUsuario.getNombre(), nuevoUsuario.getNombreUsuario(), nuevoUsuario.getEmail(),
                         passwordEncoder.encode(nuevoUsuario.getPassword()));
 
 
         Set<Rol> roles = new HashSet<>();
-        roles.add(rolService.getByRolNombre(RolNombre.ROLE_USER).get());
-        if(nuevoUsuario.getRoles().contains("admin"))
-            roles.add(rolService.getByRolNombre(RolNombre.ROLE_ADMIN).get());
+    Rol rolUser = rolService.getByRolNombre(RolNombre.ROLE_USER).orElse(null);
+    if (rolUser != null) {
+        roles.add(rolUser);
+    }
+
+    if(nuevoUsuario.getRoles().contains("admin")) {
+        Rol rolAdmin = rolService.getByRolNombre(RolNombre.ROLE_ADMIN).orElse(null);
+        if (rolAdmin != null) {
+            roles.add(rolAdmin);
+        }
+    }
         usuario.setRoles(roles);
         usuarioService.save(usuario);
-
-        logger.info("EL USUARIO GUARDADO ES  {}", usuario);
-
         return new ResponseEntity(new Mensaje("usuario guardado"), HttpStatus.CREATED);
     }
 

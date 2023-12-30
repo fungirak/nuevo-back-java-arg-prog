@@ -22,8 +22,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     boolean existsByNombreUsuario(String nombreUsuario);
     boolean existsByEmail(String email);
    
-    @Query(value="SELECT u FROM usuario u WHERE u.id_usuario =: id", nativeQuery = true)
-    Optional<Usuario> findById(@Param("id") Integer id);
+    //@Query(value="SELECT u FROM usuario u WHERE u.id_usuario =: id", nativeQuery = true)
+    //Optional<Usuario> findById(@Param("id") Integer id);
+    Optional<Usuario> findById(Integer id);
+
     
     Usuario findByNombreUsuario(String nombreUsuario);
     Set<Educacion> findEducacionByNombreUsuario(String usuarioLogueado);
