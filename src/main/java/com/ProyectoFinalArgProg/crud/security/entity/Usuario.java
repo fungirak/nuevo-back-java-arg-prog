@@ -8,6 +8,7 @@ import com.ProyectoFinalArgProg.crud.entity.Educacion;
 import com.ProyectoFinalArgProg.crud.entity.Experiencia;
 import com.ProyectoFinalArgProg.crud.entity.Proyecto;
 import com.ProyectoFinalArgProg.crud.entity.Skill;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -17,6 +18,7 @@ import java.util.Set;
 @Entity
 public class Usuario {
 
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_usuario;
@@ -34,10 +36,11 @@ public class Usuario {
     @NotNull
     private String email;
 
-
+    @JsonIgnore
     @NotNull
     private String password;
 
+   
     @NotNull
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "usuario_rol", joinColumns = @JoinColumn(name = "usuario_id"),
