@@ -12,7 +12,7 @@ import com.ProyectoFinalArgProg.crud.security.entity.Usuario;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/usuarios")
+@RequestMapping("/api/v1/portafolio/usuarios")
 @CrossOrigin(origins = "*")
 public class SearchController {
 
